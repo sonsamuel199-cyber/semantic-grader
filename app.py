@@ -109,24 +109,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================== MOBILE NAVIGATION ====================
-# We wrap this in a div class so we can hide it on desktop via CSS
-st.markdown('<div class="mobile-nav-container">', unsafe_allow_html=True)
-mobile_nav = st.selectbox(
-    "📱 Navigation",
-    ["📝 Individual Grading", "📊 Batch Grading", "📋 Rubric Builder", "❓ How It Works", "⚙️ Settings"],
-    index=["📝 Individual Grading", "📊 Batch Grading", "📋 Rubric Builder", "❓ How It Works", "⚙️ Settings"].index(
-        next((item for item in ["📝 Individual Grading", "📊 Batch Grading", "📋 Rubric Builder", "❓ How It Works", "⚙️ Settings"] if item.endswith(st.session_state.page)), "📝 Individual Grading")
-    ),
-    key="mobile_nav_dropdown"
-)
-st.markdown('</div>', unsafe_allow_html=True)
 
-# Handle the dropdown change
-nav_choice = mobile_nav.split(" ", 1)[1]
-if nav_choice != st.session_state.page:
-    st.session_state.page = nav_choice
-    st.rerun()
 
 # ==================== INDIVIDUAL GRADING ====================
 if st.session_state.page == "Individual Grading":
