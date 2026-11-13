@@ -116,27 +116,9 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
 .stSpinner > div { border-top-color: #a855f7 !important; }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-    .block-container { padding: 1rem 1rem 2rem 1rem !important; }
-    [data-testid="stSidebar"] { min-width: 220px !important; max-width: 220px !important; }
-    .header-left h1 { font-size: 1.4rem !important; }
-}
-
-/* ===== MOBILE SPECIFIC ===== */
 @media (max-width: 768px) {
-    /* 1. Hide the sidebar completely on mobile */
-    [data-testid="stSidebar"] { 
-        display: none !important; 
-    }
-    
-    /* 2. Make the main content take up the full width */
-    .block-container { 
-        padding: 1rem 0.8rem 2rem 0.8rem !important; 
-    }
-    
     [data-testid="stHorizontalBlock"] { flex-direction: column !important; gap: 1rem !important; }
     [data-testid="column"] { width: 100% !important; flex: 1 1 100% !important; min-width: 100% !important; }
-    
     .top-header { flex-direction: column !important; align-items: flex-start !important; gap: 0.8rem !important; }
     .header-left h1 { font-size: 1.3rem !important; }
     .status-badge { width: 100% !important; justify-content: flex-start !important; }
