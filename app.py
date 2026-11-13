@@ -55,6 +55,8 @@ if "grade_result" not in st.session_state:
     st.session_state.grade_result = None
 
 # ==================== SIDEBAR ====================
+PAGES = ["Individual Grading", "Batch Grading", "Rubric Builder", "How It Works", "Settings"]
+
 with st.sidebar:
     st.markdown("""
     <div class="sidebar-logo">
@@ -68,25 +70,26 @@ with st.sidebar:
     
     st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
     
-    nav_items = [
-        ("📝", "Individual Grading"),
-        ("📊", "Batch Grading"),
-        ("📋", "Rubric Builder"),
-        ("❓", "How It Works"),
-        ("⚙️", "Settings"),
-    ]
+    # Gamitin ang st.radio para sa navigation. 
+    # Ito ay gagana sa desktop at mobile nang walang aberya.
+    selected_page = st.radio(
+        "Navigation",
+        PAGES,
+        index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
+        label_visibility="collapsed",
+        key="main_navigation"
+    )
     
-    for icon, label in nav_items:
-        if st.button(f"{icon}  {label}", key=f"nav_{label}", use_container_width=True):
-            st.session_state.page = label
-            st.rerun()
+    # Kapag nagbago ang pinindot, i-update ang session state at i-rerun
+    if selected_page != st.session_state.page:
+        st.session_state.page = selected_page
+        st.rerun()
     
     st.markdown("""
     <div class="sidebar-footer">
         <div class="footer-title">Better Feedback<br>Smarter Learning</div>
     </div>
     """, unsafe_allow_html=True)
-
 # ==================== HEADER ====================
 st.markdown("""
 <div class="top-header">
