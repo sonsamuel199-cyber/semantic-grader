@@ -122,20 +122,21 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
     .header-left h1 { font-size: 1.4rem !important; }
 }
 
+/* ===== MOBILE SPECIFIC ===== */
 @media (max-width: 768px) {
-    [data-testid="stHorizontalBlock"] { flex-direction: column !important; gap: 1rem !important; }
-    [data-testid="column"] { width: 100% !important; flex: 1 1 100% !important; min-width: 100% !important; }
-    
-    /* Hide the sidebar completely on mobile */
+    /* 1. Hide the sidebar completely on mobile */
     [data-testid="stSidebar"] { 
         display: none !important; 
     }
     
-    /* Make the main content take up the full width */
+    /* 2. Make the main content take up the full width */
     .block-container { 
         padding: 1rem 0.8rem 2rem 0.8rem !important; 
     }
-
+    
+    [data-testid="stHorizontalBlock"] { flex-direction: column !important; gap: 1rem !important; }
+    [data-testid="column"] { width: 100% !important; flex: 1 1 100% !important; min-width: 100% !important; }
+    
     .top-header { flex-direction: column !important; align-items: flex-start !important; gap: 0.8rem !important; }
     .header-left h1 { font-size: 1.3rem !important; }
     .status-badge { width: 100% !important; justify-content: flex-start !important; }
@@ -156,4 +157,12 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
     .circular-score svg { width: 90px !important; height: 90px !important; }
     .verdict-title { font-size: 1rem !important; }
     .mini-value { font-size: 0.88rem !important; }
+}
+
+/* ===== HIDE MOBILE NAV ON DESKTOP ===== */
+/* This ensures the dropdown is ONLY visible on mobile screens */
+@media (min-width: 769px) {
+    .mobile-nav-container {
+        display: none !important;
+    }
 }
