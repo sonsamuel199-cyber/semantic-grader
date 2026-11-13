@@ -107,17 +107,20 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== MOBILE NAVIGATION ====================
-# This shows a dropdown menu on mobile, and hides itself on desktop
+# We wrap this in a div class so we can hide it on desktop via CSS
+st.markdown('<div class="mobile-nav-container">', unsafe_allow_html=True)
 mobile_nav = st.selectbox(
-    "Navigation Menu", 
+    "📱 Navigation",
     ["📝 Individual Grading", "📊 Batch Grading", "📋 Rubric Builder", "❓ How It Works", "⚙️ Settings"],
-    label_visibility="collapsed"
+    index=["📝 Individual Grading", "📊 Batch Grading", "📋 Rubric Builder", "❓ How It Works", "⚙️ Settings"].index(
+        next((item for item in ["📝 Individual Grading", "📊 Batch Grading", "📋 Rubric Builder", "❓ How It Works", "⚙️ Settings"] if item.endswith(st.session_state.page)), "📝 Individual Grading")
+    ),
+    key="mobile_nav_dropdown"
 )
+st.markdown('</div>', unsafe_allow_html=True)
 
-# Extract the text (removing the emoji) to match your page state
+# Handle the dropdown change
 nav_choice = mobile_nav.split(" ", 1)[1]
-
-# If the user changes the dropdown, update the session state
 if nav_choice != st.session_state.page:
     st.session_state.page = nav_choice
     st.rerun()
