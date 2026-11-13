@@ -140,14 +140,14 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
 }
 /* ===== MOBILE TABS NAVIGATION ===== */
 
-/* Itago ang mobile tabs sa desktop */
+/* Itago ang buong mobile container sa desktop (screen > 768px) */
 @media (min-width: 769px) {
-    .mobile-tabs-container {
+    div[data-testid="stVerticalBlock"]:has(> div > div > .mobile-tabs-container) {
         display: none !important;
     }
 }
 
-/* Ipakita at i-style ang mobile tabs sa mobile */
+/* Ipakita at i-style ang mobile tabs sa mobile (screen <= 768px) */
 @media (max-width: 768px) {
     .mobile-tabs-container {
         display: block !important;
@@ -155,7 +155,7 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
         padding-bottom: 0.5rem !important;
         border-bottom: 1px solid rgba(160, 60, 255, 0.2) !important;
     }
-
+    
     /* Gawing scrollable na pahalang na tabs */
     .mobile-tabs-container [data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
