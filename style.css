@@ -140,16 +140,16 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
 }
 /* ===== MOBILE TABS NAVIGATION ===== */
 
-/* Itago ang buong mobile container sa desktop (screen > 768px) */
+/* Itago ang mobile tabs sa desktop gamit ang CSS class */
 @media (min-width: 769px) {
-    div[data-testid="stVerticalBlock"]:has(> div > div > .mobile-tabs-container) {
+    .mobile-tabs-only {
         display: none !important;
     }
 }
 
-/* Ipakita at i-style ang mobile tabs sa mobile (screen <= 768px) */
+/* Ipakita at i-style ang mobile tabs sa mobile */
 @media (max-width: 768px) {
-    .mobile-tabs-container {
+    .mobile-tabs-only {
         display: block !important;
         margin-bottom: 1rem !important;
         padding-bottom: 0.5rem !important;
@@ -157,7 +157,7 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
     }
     
     /* Gawing scrollable na pahalang na tabs */
-    .mobile-tabs-container [data-testid="stRadio"] > div[role="radiogroup"] {
+    .mobile-tabs-only [data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
         overflow-x: auto !important;
@@ -166,12 +166,12 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
         scrollbar-width: none !important;
     }
     
-    .mobile-tabs-container [data-testid="stRadio"] > div[role="radiogroup"]::-webkit-scrollbar {
+    .mobile-tabs-only [data-testid="stRadio"] > div[role="radiogroup"]::-webkit-scrollbar {
         display: none !important;
     }
 
     /* I-style ang bawat tab */
-    .mobile-tabs-container [data-testid="stRadio"] label {
+    .mobile-tabs-only [data-testid="stRadio"] label {
         background: rgba(30, 20, 45, 0.8) !important;
         border: 1px solid rgba(168, 85, 247, 0.2) !important;
         border-radius: 20px !important;
@@ -183,8 +183,8 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
     }
 
     /* I-highlight ang active na tab */
-    .mobile-tabs-container [data-testid="stRadio"] label[data-checked="true"],
-    .mobile-tabs-container [data-testid="stRadio"] input:checked + div {
+    .mobile-tabs-only [data-testid="stRadio"] label[data-checked="true"],
+    .mobile-tabs-only [data-testid="stRadio"] input:checked + div {
         background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%) !important;
         color: #ffffff !important;
         border-color: #a855f7 !important;
