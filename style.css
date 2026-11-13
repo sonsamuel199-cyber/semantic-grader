@@ -142,4 +142,43 @@ hr { border-color: rgba(160, 60, 255, 0.1) !important; }
     .mini-value { font-size: 0.88rem !important; }
 }
 
+/* ===== CUSTOM HAMBURGER MENU ===== */
 
+/* Itago ang hamburger menu sa desktop */
+@media (min-width: 769px) {
+    .mobile-hamburger {
+        display: none !important;
+    }
+}
+
+/* Ipakita ang hamburger sa mobile, naka-fix sa top-left */
+@media (max-width: 768px) {
+    .mobile-hamburger {
+        display: block !important;
+        position: fixed !important;
+        top: 12px !important;
+        left: 12px !important;
+        z-index: 9999 !important;
+    }
+
+    /* Gawing magandang hamburger button */
+    .mobile-hamburger [data-testid="stPopover"] > button {
+        background: rgba(21, 10, 38, 0.95) !important;
+        color: #c084fc !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        border-radius: 10px !important;
+        padding: 0.4rem 0.7rem !important;
+        font-size: 1.3rem !important;
+        font-weight: bold !important;
+        line-height: 1 !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+        backdrop-filter: blur(10px) !important;
+        min-height: 40px !important;
+        width: 45px !important;
+    }
+    
+    .mobile-hamburger [data-testid="stPopover"] > button:hover {
+        background: rgba(168, 85, 247, 0.3) !important;
+        color: #ffffff !important;
+    }
+}
