@@ -110,19 +110,24 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== MOBILE TABS NAVIGATION ====================
+# Gumamit tayo ng st.tabs (built-in) para sa mobile
 # Lalabas lang ito sa mobile dahil sa CSS
 st.markdown('<div class="mobile-tabs-container">', unsafe_allow_html=True)
+
+# Gumawa ng horizontal radio na may unique key
 mobile_page = st.radio(
-    "Navigation",
+    "Mobile Navigation",
     PAGES,
     index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
     horizontal=True,
     label_visibility="collapsed",
-    key="mobile_tabs"
+    key="mobile_nav_radio"
 )
+
 if mobile_page != st.session_state.page:
     st.session_state.page = mobile_page
     st.rerun()
+
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ==================== INDIVIDUAL GRADING ====================
