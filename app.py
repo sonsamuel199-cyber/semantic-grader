@@ -109,18 +109,19 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================== MOBILE NAVIGATION ====================
-# Ito ay magiging navigation bar na lalabas lang sa mobile
-st.markdown('<div class="mobile-nav-bar">', unsafe_allow_html=True)
-mobile_nav = st.selectbox(
-    "Menu", 
+# ==================== MOBILE TABS NAVIGATION ====================
+# Lalabas lang ito sa mobile dahil sa CSS
+st.markdown('<div class="mobile-tabs-container">', unsafe_allow_html=True)
+mobile_page = st.radio(
+    "Navigation",
     PAGES,
     index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
+    horizontal=True,
     label_visibility="collapsed",
-    key="mobile_select"
+    key="mobile_tabs"
 )
-if mobile_nav != st.session_state.page:
-    st.session_state.page = mobile_nav
+if mobile_page != st.session_state.page:
+    st.session_state.page = mobile_page
     st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
