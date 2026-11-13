@@ -109,7 +109,20 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
+# ==================== MOBILE NAVIGATION ====================
+# Ito ay magiging navigation bar na lalabas lang sa mobile
+st.markdown('<div class="mobile-nav-bar">', unsafe_allow_html=True)
+mobile_nav = st.selectbox(
+    "Menu", 
+    PAGES,
+    index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
+    label_visibility="collapsed",
+    key="mobile_select"
+)
+if mobile_nav != st.session_state.page:
+    st.session_state.page = mobile_nav
+    st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
 
 # ==================== INDIVIDUAL GRADING ====================
 if st.session_state.page == "Individual Grading":
