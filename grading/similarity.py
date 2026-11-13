@@ -1,14 +1,7 @@
 """
-Semantic Similarity Scoring
-----------------------------
-Implements the core grading algorithm described in Chapter 3 (Methodology):
-a pre-trained Sentence-BERT (SBERT) model generates semantic vector
-representations of the reference answer and the student response, and
-Cosine Similarity measures the degree of conceptual alignment between them.
-
-This score is the ONLY thing that determines the final grade. The optional
-rubric (see rubric_breakdown below) never affects it — per Chapter 3
-Scope and Delimitations, the rubric is for instructor feedback only.
+Semantic Similarity Scoring with Calibration
+--------------------------------------------
+Implements the core grading algorithm with a built-in Calibration Curve.
 """
 
 from functools import lru_cache
@@ -18,8 +11,7 @@ from sentence_transformers import SentenceTransformer, util
 
 from .preprocessing import normalize_text
 
-# Lightweight pre-trained SBERT model — matches the thesis's emphasis on a
-# "lightweight, accessible prototype" that doesn't require heavy compute.
+# Lightweight pre-trained SBERT model
 MODEL_NAME = "all-MiniLM-L6-v2"
 
 
@@ -31,11 +23,8 @@ def get_model() -> SentenceTransformer:
 
 def semantic_similarity_score(reference_answer: str, student_response: str) -> float:
     """
-    Returns a similarity score from 0-100 between a reference answer and a
-    student response:
-
-        score = cosine_similarity( SBERT(normalize(reference)),
-                                    SBERT(normalize(student)) ) * 100
+    Returns a calibrated similarity score from 0-100 between a reference answer 
+    and a student response.
     """
     model = get_model()
 
@@ -47,17 +36,27 @@ def semantic_similarity_score(reference_answer: str, student_response: str) -> f
 
     embeddings = model.encode([ref_clean, stu_clean], convert_to_tensor=True)
     cosine_score = util.cos_sim(embeddings[0], embeddings[1]).item()
-    cosine_score = max(0.0, min(1.0, cosine_score))  # clamp for safety
+    
+    # Clamp between 0.0 and 1.0 for safety
+    cosine_score = max(0.0, min(1.0, cosine_score))
 
-    return round(cosine_score * 100, 2)
+    # ==========================================
+    # CALIBRATION LOGIC (Grading Curve)
+    # ==========================================
+    # Formula: (Raw Score * Multiplier) + Offset
+    # Halimbawa: 0.60 -> (0.60 * 1.3) + 0.05 = 0.83
+    calibrated_score = (cosine_score * 1.3) + 0.05
+    
+    # Siguraduhing hindi lalampas sa 1.0 (100%)
+    calibrated_score = min(1.0, calibrated_score)
+
+    # Ibalik bilang percentage (0-100)
+    return round(calibrated_score * 100, 2)
 
 
 def rubric_breakdown(student_response: str, criteria: List[Dict]) -> List[Dict]:
     """
-    criteria: list of dicts like {"keywords": "sunlight, water, CO2", "weight": 40}
-
-    Returns a per-criterion keyword-presence breakdown for instructor
-    feedback ONLY. This is never used to compute the final grade.
+    Returns a per-criterion keyword-presence breakdown for instructor feedback ONLY.
     """
     clean_response = normalize_text(student_response)
     results = []
