@@ -110,13 +110,32 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== MOBILE TABS NAVIGATION ====================
-# Gumamit tayo ng st.tabs (built-in) para sa mobile
-# Lalabas lang ito sa mobile dahil sa CSS
-st.markdown('<div class="mobile-tabs-container">', unsafe_allow_html=True)
+# Gumamit tayo ng st.tabs na lalabas lang sa mobile
+# Para hindi lumabas sa desktop, gagamitin natin ang st.session_state
 
-# Gumawa ng horizontal radio na may unique key
+# Kunin ang screen width gamit ang JavaScript
+import streamlit.components.v1 as components
+
+# Simple detection: kung ang screen width ay maliit, mobile
+components.html(
+    """
+    <script>
+        const width = window.innerWidth;
+        if (width < 768) {
+            window.parent.document.body.classList.add('mobile-view');
+        }
+    </script>
+    """,
+    height=0
+)
+
+# Gumamit ng st.tabs para sa mobile navigation
+# Ito ay lalabas LANG kapag mobile (naka-hide sa desktop via CSS class)
+st.markdown('<div class="mobile-tabs-only">', unsafe_allow_html=True)
+
+# Gumawa ng horizontal radio buttons
 mobile_page = st.radio(
-    "Mobile Navigation",
+    "Navigation",
     PAGES,
     index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
     horizontal=True,
