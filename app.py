@@ -56,6 +56,7 @@ if "grade_result" not in st.session_state:
 
 # ==================== SIDEBAR ====================
 PAGES = ["Individual Grading", "Batch Grading", "Rubric Builder", "How It Works", "Settings"]
+ICONS = ["📝", "📊", "📋", "❓", "⚙️"]
 
 with st.sidebar:
     st.markdown("""
@@ -70,20 +71,11 @@ with st.sidebar:
     
     st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
     
-    # Gamitin ang st.radio para sa navigation. 
-    # Ito ay gagana sa desktop at mobile nang walang aberya.
-    selected_page = st.radio(
-        "Navigation",
-        PAGES,
-        index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
-        label_visibility="collapsed",
-        key="main_navigation"
-    )
-    
-    # Kapag nagbago ang pinindot, i-update ang session state at i-rerun
-    if selected_page != st.session_state.page:
-        st.session_state.page = selected_page
-        st.rerun()
+    # Gumamit ng custom buttons na may icons para sa desktop
+    for icon, page in zip(ICONS, PAGES):
+        if st.button(f"{icon}  {page}", key=f"nav_{page}", use_container_width=True):
+            st.session_state.page = page
+            st.rerun()
     
     st.markdown("""
     <div class="sidebar-footer">
@@ -109,45 +101,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================== MOBILE TABS NAVIGATION ====================
-# Gumamit tayo ng st.tabs na lalabas lang sa mobile
-# Para hindi lumabas sa desktop, gagamitin natin ang st.session_state
 
-# Kunin ang screen width gamit ang JavaScript
-import streamlit.components.v1 as components
-
-# Simple detection: kung ang screen width ay maliit, mobile
-components.html(
-    """
-    <script>
-        const width = window.innerWidth;
-        if (width < 768) {
-            window.parent.document.body.classList.add('mobile-view');
-        }
-    </script>
-    """,
-    height=0
-)
-
-# Gumamit ng st.tabs para sa mobile navigation
-# Ito ay lalabas LANG kapag mobile (naka-hide sa desktop via CSS class)
-st.markdown('<div class="mobile-tabs-only">', unsafe_allow_html=True)
-
-# Gumawa ng horizontal radio buttons
-mobile_page = st.radio(
-    "Navigation",
-    PAGES,
-    index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
-    horizontal=True,
-    label_visibility="collapsed",
-    key="mobile_nav_radio"
-)
-
-if mobile_page != st.session_state.page:
-    st.session_state.page = mobile_page
-    st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
 
 # ==================== INDIVIDUAL GRADING ====================
 if st.session_state.page == "Individual Grading":
