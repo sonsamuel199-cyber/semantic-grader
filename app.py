@@ -109,15 +109,20 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================== MOBILE HAMBURGER MENU ====================
-# Ito ang floating hamburger button na lalabas sa mobile lang
-st.markdown('<div class="mobile-hamburger">', unsafe_allow_html=True)
-with st.popover("☰"):
-    st.markdown("### 📱 Menu")
-    for page in PAGES:
-        if st.button(page, use_container_width=True, key=f"mob_nav_{page}"):
-            st.session_state.page = page
-            st.rerun()
+# ==================== MOBILE NAVIGATION (TABS) ====================
+# Ito ang magiging pahalang na menu sa mobile
+st.markdown('<div class="mobile-tabs-container">', unsafe_allow_html=True)
+mobile_nav = st.radio(
+    "Navigation", 
+    PAGES,
+    index=PAGES.index(st.session_state.page) if st.session_state.page in PAGES else 0,
+    label_visibility="collapsed",
+    horizontal=True,
+    key="mobile_radio_nav"
+)
+if mobile_nav != st.session_state.page:
+    st.session_state.page = mobile_nav
+    st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ==================== INDIVIDUAL GRADING ====================
