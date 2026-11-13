@@ -4,9 +4,25 @@ Modern Dashboard UI (Fully Responsive)
 """
 
 import io
+import os
+import sys
+
+# 1. Tell Python where to find the local 'grading' folder
+project_root = os.path.dirname(os.path.abspath(__file__))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+
+# 2. Download required NLTK data for the cloud environment
+import nltk
+nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)
+nltk.download('stopwords', quiet=True)
+nltk.download('wordnet', quiet=True)
+nltk.download('omw-1.4', quiet=True)
 
 from grading.similarity import semantic_similarity_score, rubric_breakdown
 
