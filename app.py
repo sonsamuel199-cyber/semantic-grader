@@ -106,6 +106,22 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ==================== MOBILE NAVIGATION ====================
+# This shows a dropdown menu on mobile, and hides itself on desktop
+mobile_nav = st.selectbox(
+    "Navigation Menu", 
+    ["📝 Individual Grading", "📊 Batch Grading", "📋 Rubric Builder", "❓ How It Works", "⚙️ Settings"],
+    label_visibility="collapsed"
+)
+
+# Extract the text (removing the emoji) to match your page state
+nav_choice = mobile_nav.split(" ", 1)[1]
+
+# If the user changes the dropdown, update the session state
+if nav_choice != st.session_state.page:
+    st.session_state.page = nav_choice
+    st.rerun()
+
 # ==================== INDIVIDUAL GRADING ====================
 if st.session_state.page == "Individual Grading":
     left_col, right_col = st.columns([1.15, 1], gap="large")
