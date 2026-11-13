@@ -336,51 +336,118 @@ elif st.session_state.page == "Batch Grading":
         <span class="panel-icon">📊</span>
         <div>
             <div class="panel-title">Batch Grading</div>
-            <div class="panel-sub">Upload a CSV of student responses to grade an entire class at once.</div>
+            <div class="panel-sub">Upload a Google Forms CSV. Each question column is graded against its own reference answer.</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
-    batch_reference = st.text_area(
-        "Reference Answer for this batch",
-        value="Photosynthesis is the process where plants use sunlight, water, and carbon dioxide to produce glucose and oxygen.",
-        height=80, key="batch_ref"
+
+    uploaded_file = st.file_uploader(
+        "Upload CSV (Google Forms export supported)",
+        type=["csv"],
     )
-    uploaded_file = st.file_uploader("Upload CSV (columns: student_id, response)", type=["csv"])
-    
-    if st.button("✨  Process Batch", type="primary"):
-        if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
-        else:
-            st.info("No file uploaded — using sample class data for preview.")
-            df = pd.DataFrame({
-                "student_id": ["2027-0011", "2027-0012", "2027-0013", "2027-0014"],
-                "response": [
-                    "Plants absorb sunlight and turn water and carbon dioxide into sugar and oxygen.",
-                    "Photosynthesis happens in the leaves where chlorophyll captures light energy.",
-                    "It is when plants breathe in air to grow taller during the day.",
-                    "Sunlight, water, and CO2 combine in the chloroplast to make glucose, releasing O2.",
-                ],
-            })
-        cols = {c.lower().strip(): c for c in df.columns}
-        id_col = cols.get("student_id") or cols.get("id") or cols.get("name") or df.columns[0]
-        response_col = cols.get("response") or cols.get("answer") or df.columns[-1]
-        
-        with st.spinner(f"Grading {len(df)} responses..."):
-            df["similarity_score"] = df[response_col].apply(lambda r: semantic_similarity_score(batch_reference, str(r)))
-        
-        result_df = df[[id_col, response_col, "similarity_score"]].rename(
-            columns={id_col: "student_id", response_col: "response"}
+
+    if uploaded_file is not None:
+        raw_df = pd.read_csv(uploaded_file)
+
+        # Columns that are NOT questions
+        meta_candidates = {"timestamp", "username", "email", "name",
+                           "student_id", "id", "score", "submitted at"}
+        question_cols = [
+            c for c in raw_df.columns
+            if c.strip().lower() not in meta_candidates
+        ]
+
+        if not question_cols:
+            st.error("No question columns detected in the CSV.")
+            st.stop()
+
+        st.markdown("### 1️⃣  Map each question to a reference answer")
+        st.caption(
+            "Every non-meta column is treated as a question. "
+            "Enter the reference answer used to grade that question."
         )
-        st.session_state["batch_result"] = result_df
-    
+
+        # Persist references across reruns
+        if "batch_refs" not in st.session_state:
+            st.session_state.batch_refs = {
+                "what is land?": "Land is the solid part of Earth's surface, not covered by water.",
+                "what is ocean?": "An ocean is a large body of salt water that covers most of Earth's surface.",
+            }
+
+        references = {}
+        for q in question_cols:
+            references[q] = st.text_area(
+                f"Reference for: **{q}**",
+                value=st.session_state.batch_refs.get(q, ""),
+                height=70,
+                key=f"ref_{q}",
+            )
+        st.session_state.batch_refs = references
+
+        # Identify student id column
+        meta_lower = {c.lower().strip(): c for c in raw_df.columns}
+        id_col = (
+            meta_lower.get("student_id")
+            or meta_lower.get("username")
+            or meta_lower.get("email")
+            or meta_lower.get("name")
+            or raw_df.columns[0]
+        )
+
+        if st.button("✨  Process Batch", type="primary"):
+            long_rows = []
+            with st.spinner(f"Grading {len(raw_df)} students × {len(question_cols)} questions..."):
+                for _, row in raw_df.iterrows():
+                    for q in question_cols:
+                        ref = references.get(q, "").strip()
+                        ans = row[q]
+                        if pd.isna(ans) or not ref:
+                            continue
+                        score = semantic_similarity_score(ref, str(ans))
+                        long_rows.append({
+                            "student_id": row[id_col],
+                            "question":   q,
+                            "response":   ans,
+                            "reference_answer": ref,
+                            "similarity_score": score,
+                        })
+            st.session_state["batch_result"] = pd.DataFrame(long_rows)
+
     if "batch_result" in st.session_state:
         result_df = st.session_state["batch_result"]
-        st.dataframe(result_df, use_container_width=True, hide_index=True)
-        st.write(f"Class average: **{result_df['similarity_score'].mean():.1f}%**")
+
+        # Per-question summary
+        st.markdown("### 2️⃣  Results")
+        summary = (
+            result_df.groupby("question")["similarity_score"]
+            .agg(n="count", avg="mean", min="min", max="max")
+            .round(2).reset_index()
+        )
+        st.markdown("**Per-Question Summary**")
+        st.dataframe(summary, use_container_width=True, hide_index=True)
+
+        # Optional wide view: one row per student, one column per question
+        st.markdown("**Wide View (per student)**")
+        wide = result_df.pivot_table(
+            index="student_id", columns="question",
+            values="similarity_score", aggfunc="mean"
+        ).round(2).reset_index()
+        st.dataframe(wide, use_container_width=True, hide_index=True)
+
+        # Detailed long view
+        with st.expander("📋  Detailed Results (long format)"):
+            st.dataframe(result_df, use_container_width=True, hide_index=True)
+
+        st.write(f"Overall class average: **{result_df['similarity_score'].mean():.1f}%**")
+
         csv_buffer = io.StringIO()
         result_df.to_csv(csv_buffer, index=False)
-        st.download_button("📥  Export Results", data=csv_buffer.getvalue(), file_name="grading_results.csv", mime="text/csv")
+        st.download_button(
+            "📥  Export Results",
+            data=csv_buffer.getvalue(),
+            file_name="grading_results.csv",
+            mime="text/csv",
+        )
 
 # ==================== RUBRIC BUILDER ====================
 elif st.session_state.page == "Rubric Builder":
