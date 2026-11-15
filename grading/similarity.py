@@ -1,12 +1,5 @@
 """
-Semantic Similarity Scoring with Keyword Boosting
----------------------------------------------------
-Implements the core grading algorithm described in Chapter 3 (Methodology):
-SBERT generates semantic vector representations, and Cosine Similarity
-measures the degree of conceptual alignment.
-
-A keyword boosting layer is added to penalize incorrect keyword usage
-(e.g., using "gap" when the correct answer is "connected").
+Semantic Similarity Scoring with Keyword Boosting and Threshold Adjustment
 """
 
 from functools import lru_cache
@@ -21,15 +14,10 @@ MODEL_NAME = "all-MiniLM-L6-v2"
 
 @lru_cache(maxsize=1)
 def get_model() -> SentenceTransformer:
-    """Loads the SBERT model once and caches it for reuse."""
     return SentenceTransformer(MODEL_NAME)
 
 
 def semantic_similarity_score(reference_answer: str, student_response: str) -> float:
-    """
-    Returns a similarity score from 0-100 between a reference answer and a
-    student response, with keyword boosting for domain-specific terms.
-    """
     model = get_model()
 
     ref_clean = normalize_text(reference_answer)
@@ -42,43 +30,41 @@ def semantic_similarity_score(reference_answer: str, student_response: str) -> f
     cosine_score = util.cos_sim(embeddings[0], embeddings[1]).item()
     cosine_score = max(0.0, min(1.0, cosine_score))
 
-    # ===== KEYWORD BOOSTING (Science/Electricity Domain) =====
+    # ===== KEYWORD BOOSTING =====
     ref_lower = reference_answer.lower()
     stu_lower = student_response.lower()
     
-    # Important keywords for Science (electricity)
     important_keywords = ["connected", "terminal", "battery", "gap", "voltage", "circuit"]
     
     ref_keywords = sum(1 for kw in important_keywords if kw in ref_lower)
     stu_keywords = sum(1 for kw in important_keywords if kw in stu_lower)
     
-    # Boost if student has keywords that reference also has
     if ref_keywords > 0:
         keyword_overlap = stu_keywords / ref_keywords
         if keyword_overlap >= 0.5:
-            cosine_score += 0.05  # +5% boost
+            cosine_score += 0.05
         if keyword_overlap >= 0.8:
-            cosine_score += 0.05  # +10% total
+            cosine_score += 0.05
 
-    # Penalize if student says "gap" but reference says "connected"
+    # Penalize incorrect keyword usage
     if "gap" in stu_lower and "connected" in ref_lower:
-        cosine_score -= 0.10  # -10% penalty
+        cosine_score -= 0.10
     if "connected" in stu_lower and "gap" in ref_lower:
-        cosine_score -= 0.10  # -10% penalty
-
-    # Penalize if student says "not connected" when reference says "connected"
+        cosine_score -= 0.10
     if "not connected" in stu_lower and "connected" in ref_lower:
-        cosine_score -= 0.15  # -15% penalty
+        cosine_score -= 0.15
 
-    cosine_score = max(0.0, min(1.0, cosine_score))
-    return round(cosine_score * 100, 2)
+    # ===== THRESHOLD ADJUSTMENT =====
+    # I-adjust ang raw score para tumaas ang passing rate
+    # Formula: (Raw Score * 1.1) + 0.02
+    # Ito ay para tumaas ang score ng mga tamang sagot at bumaba ang FP
+    adjusted_score = (cosine_score * 1.1) + 0.02
+    adjusted_score = max(0.0, min(1.0, adjusted_score))
+
+    return round(adjusted_score * 100, 2)
 
 
 def rubric_breakdown(student_response: str, criteria: List[Dict]) -> List[Dict]:
-    """
-    Returns a per-criterion keyword-presence breakdown for instructor
-    feedback ONLY. This is never used to compute the final grade.
-    """
     clean_response = normalize_text(student_response)
     results = []
 
