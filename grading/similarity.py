@@ -1,5 +1,10 @@
 """
-Semantic Similarity Scoring with Keyword Boosting Only
+Semantic Similarity Scoring
+----------------------------
+Implements the core grading algorithm described in Chapter 3 (Methodology):
+a pre-trained Sentence-BERT (SBERT) model generates semantic vector
+representations of the reference answer and the student response, and
+Cosine Similarity measures the degree of conceptual alignment between them.
 """
 
 from functools import lru_cache
@@ -14,10 +19,15 @@ MODEL_NAME = "all-MiniLM-L6-v2"
 
 @lru_cache(maxsize=1)
 def get_model() -> SentenceTransformer:
+    """Loads the SBERT model once and caches it for reuse."""
     return SentenceTransformer(MODEL_NAME)
 
 
 def semantic_similarity_score(reference_answer: str, student_response: str) -> float:
+    """
+    Returns a similarity score from 0-100 between a reference answer and a
+    student response using pure SBERT + Cosine Similarity.
+    """
     model = get_model()
 
     ref_clean = normalize_text(reference_answer)
@@ -30,36 +40,11 @@ def semantic_similarity_score(reference_answer: str, student_response: str) -> f
     cosine_score = util.cos_sim(embeddings[0], embeddings[1]).item()
     cosine_score = max(0.0, min(1.0, cosine_score))
 
-    # ===== KEYWORD BOOSTING (Walang threshold adjustment) =====
-    ref_lower = reference_answer.lower()
-    stu_lower = student_response.lower()
-    
-    important_keywords = ["connected", "terminal", "battery", "gap", "voltage", "circuit"]
-    
-    ref_keywords = sum(1 for kw in important_keywords if kw in ref_lower)
-    stu_keywords = sum(1 for kw in important_keywords if kw in stu_lower)
-    
-    # Boost kung may tamang keywords
-    if ref_keywords > 0:
-        keyword_overlap = stu_keywords / ref_keywords
-        if keyword_overlap >= 0.5:
-            cosine_score += 0.05
-        if keyword_overlap >= 0.8:
-            cosine_score += 0.05
-
-    # Penalize kung may maling keywords
-    if "gap" in stu_lower and "connected" in ref_lower:
-        cosine_score -= 0.10
-    if "connected" in stu_lower and "gap" in ref_lower:
-        cosine_score -= 0.10
-    if "not connected" in stu_lower and "connected" in ref_lower:
-        cosine_score -= 0.15
-
-    cosine_score = max(0.0, min(1.0, cosine_score))
     return round(cosine_score * 100, 2)
 
 
 def rubric_breakdown(student_response: str, criteria: List[Dict]) -> List[Dict]:
+    """Returns a per-criterion keyword-presence breakdown for instructor feedback ONLY."""
     clean_response = normalize_text(student_response)
     results = []
 
