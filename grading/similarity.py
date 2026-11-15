@@ -1,5 +1,5 @@
 """
-Semantic Similarity Scoring with Keyword Boosting and Threshold Adjustment
+Semantic Similarity Scoring with Keyword Boosting Only
 """
 
 from functools import lru_cache
@@ -30,7 +30,7 @@ def semantic_similarity_score(reference_answer: str, student_response: str) -> f
     cosine_score = util.cos_sim(embeddings[0], embeddings[1]).item()
     cosine_score = max(0.0, min(1.0, cosine_score))
 
-    # ===== KEYWORD BOOSTING =====
+    # ===== KEYWORD BOOSTING (Walang threshold adjustment) =====
     ref_lower = reference_answer.lower()
     stu_lower = student_response.lower()
     
@@ -39,6 +39,7 @@ def semantic_similarity_score(reference_answer: str, student_response: str) -> f
     ref_keywords = sum(1 for kw in important_keywords if kw in ref_lower)
     stu_keywords = sum(1 for kw in important_keywords if kw in stu_lower)
     
+    # Boost kung may tamang keywords
     if ref_keywords > 0:
         keyword_overlap = stu_keywords / ref_keywords
         if keyword_overlap >= 0.5:
@@ -46,7 +47,7 @@ def semantic_similarity_score(reference_answer: str, student_response: str) -> f
         if keyword_overlap >= 0.8:
             cosine_score += 0.05
 
-    # Penalize incorrect keyword usage
+    # Penalize kung may maling keywords
     if "gap" in stu_lower and "connected" in ref_lower:
         cosine_score -= 0.10
     if "connected" in stu_lower and "gap" in ref_lower:
@@ -54,14 +55,8 @@ def semantic_similarity_score(reference_answer: str, student_response: str) -> f
     if "not connected" in stu_lower and "connected" in ref_lower:
         cosine_score -= 0.15
 
-    # ===== THRESHOLD ADJUSTMENT =====
-    # I-adjust ang raw score para tumaas ang passing rate
-    # Formula: (Raw Score * 1.1) + 0.02
-    # Ito ay para tumaas ang score ng mga tamang sagot at bumaba ang FP
-    adjusted_score = (cosine_score * 1.1) + 0.02
-    adjusted_score = max(0.0, min(1.0, adjusted_score))
-
-    return round(adjusted_score * 100, 2)
+    cosine_score = max(0.0, min(1.0, cosine_score))
+    return round(cosine_score * 100, 2)
 
 
 def rubric_breakdown(student_response: str, criteria: List[Dict]) -> List[Dict]:
